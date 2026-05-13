@@ -76,7 +76,7 @@ if __name__ == "__main__":
     try:
         # Set and check license key. If the license key is not valid, an exception is thrown.
         from pdftools_toolbox.sdk import Sdk
-        Sdk.initialize("insert-license-key-here", None)
+        Sdk.initialize("<-- insert license key -->", None)
 
         # Define border
         border = 20

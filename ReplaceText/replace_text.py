@@ -87,8 +87,22 @@ def add_text(out_doc: Document, page, replacement_text):
     font_parts = fragment.font.base_font.split("-")
     font_family = font_parts[0]
     font_style = font_parts[1] if len(font_parts) > 1 else None
-    # Create a new font object
-    font = Font.create_from_system(out_doc, font_family, font_style, True)
+    # Create a new font object, falling back to common system fonts if the
+    # original font is not installed
+    font = None
+    for candidate in [font_family, "Arial", "Helvetica"]:
+        try:
+            font = Font.create_from_system(out_doc, candidate, font_style, True)
+            if candidate != font_family:
+                print(f"Fallback font '{candidate}' was selected, because default '{font_family}' font was not found on the machine.")
+            break
+        except Exception:
+            continue
+    if font is None:
+        raise RuntimeError(
+            f"Could not find font '{font_family}' or any fallback (Arial, Helvetica) on this system. "
+            f"Install the '{font_family}' font and try again."
+        )
     # Create a text generator and set the original fragment's properties
     with TextGenerator(text, font, fragment.font_size, None) as text_gen:
         text_gen.character_spacing = fragment.character_spacing
@@ -122,7 +136,7 @@ if __name__ == "__main__":
     try:
         # Set and check license key. If the license key is not valid, an exception is thrown.
         from pdftools_toolbox.sdk import Sdk
-        Sdk.initialize("insert-license-key-here", None)
+        Sdk.initialize("<-- insert license key -->", None)
 
         # Define global variables
         overall_transform = AffineTransform.get_identity()
